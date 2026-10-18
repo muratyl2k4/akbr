@@ -25,7 +25,22 @@ SECRET_KEY = 'django-insecure-tru&b#8cg6b*bbi*(9w_k3idplwws_&tv3-@40cvnt+r%p2eal
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'kral2121benim.pythonanywhere.com',
+    'www.kral2121benim.pythonanywhere.com',
+    '127.0.0.1',
+    'localhost',
+    '*',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://kral2121benim.pythonanywhere.com',
+    'http://kral2121benim.pythonanywhere.com',
+    'https://*.pythonanywhere.com',
+    'http://127.0.0.1:8000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
 
 
 # Application definition
@@ -121,7 +136,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
@@ -132,7 +147,18 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS Settings
+# CORS Settings for PythonAnywhere & Mobile/Web
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    '*',
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 

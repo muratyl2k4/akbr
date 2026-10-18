@@ -11,8 +11,30 @@ IMG_FOOTER_INFO = os.path.join(ASSETS_DIR, "footer_info.png")
 IMG_SEE_BACK = os.path.join(ASSETS_DIR, "footer_see_back.png")
 IMG_SIZIN_ICIN = os.path.join(ASSETS_DIR, "footer_sizin_icin.png")
 
-FONT_REGULAR = os.path.join(os.environ.get("WINDIR", "C:\\Windows"), "Fonts", "arial.ttf")
-FONT_BOLD = os.path.join(os.environ.get("WINDIR", "C:\\Windows"), "Fonts", "arialbd.ttf")
+def resolve_font(filename, fallback_filename="arial_narrow.ttf"):
+    # 1. Windows font dir
+    win_dir = os.environ.get("WINDIR", "C:\\Windows")
+    p = os.path.join(win_dir, "Fonts", filename)
+    if os.path.exists(p):
+        return p
+    # 2. Linux common font locations
+    is_bold = "bd" in filename.lower() or "bold" in filename.lower()
+    linux_paths = [
+        f"/usr/share/fonts/truetype/msttcorefonts/{filename}",
+        f"/usr/share/fonts/truetype/liberation/LiberationSans-{'Bold' if is_bold else 'Regular'}.ttf",
+        f"/usr/share/fonts/truetype/dejavu/DejaVuSans{'-Bold' if is_bold else ''}.ttf",
+    ]
+    for lp in linux_paths:
+        if os.path.exists(lp):
+            return lp
+    # 3. Project assets fallback
+    local_asset = os.path.join(os.path.dirname(__file__), "assets", fallback_filename)
+    if os.path.exists(local_asset):
+        return local_asset
+    return filename
+
+FONT_REGULAR = resolve_font("arial.ttf")
+FONT_BOLD = resolve_font("arialbd.ttf")
 
 AKBANK_RED = (0.863, 0.0, 0.102)   # #DC001A
 TEXT_BLACK = (0.0, 0.0, 0.0)
