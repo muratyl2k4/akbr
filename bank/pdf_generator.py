@@ -7,12 +7,35 @@ from decimal import Decimal
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 
+BUNDLED_ARIAL = os.path.join(ASSETS_DIR, "arial.ttf")
 SYSTEM_ARIAL = r"C:\Windows\Fonts\arial.ttf"
 FALLBACK_FONT = os.path.join(ASSETS_DIR, "arial_narrow.ttf")
-FONT_FILE = SYSTEM_ARIAL if os.path.exists(SYSTEM_ARIAL) else FALLBACK_FONT
+
+if os.path.exists(BUNDLED_ARIAL):
+    FONT_FILE = BUNDLED_ARIAL
+elif os.path.exists(SYSTEM_ARIAL):
+    FONT_FILE = SYSTEM_ARIAL
+else:
+    FONT_FILE = FALLBACK_FONT
+
 LOGO_PATH = os.path.join(ASSETS_DIR, "akbank_logo_crisp.png")
 
 FONT_OBJ = fitz.Font(fontfile=FONT_FILE)
+
+def turkish_upper(s: str) -> str:
+    """Türkçe karakterleri (ç, ğ, ı, i, ö, ş, ü) doğru büyük harfe çevirir"""
+    if not s:
+        return ""
+    tr_map = {
+        'i': 'İ',
+        'ı': 'I',
+        'ç': 'Ç',
+        'ğ': 'Ğ',
+        'ö': 'Ö',
+        'ş': 'Ş',
+        'ü': 'Ü',
+    }
+    return "".join(tr_map.get(c, c.upper()) for c in s)
 
 def get_text_width(text: str, fontsize: float, is_bold: bool = False) -> float:
     """Metnin 0.82 yatay oranlı Arial ile nokta (point) cinsinden genişliğini hesaplar"""
@@ -239,7 +262,7 @@ def generate_akbank_pdf_bytes(
     # Başlık Metinleri
     insert_text_styled(page, fitz.Point(297.5, 46.0), "DEKONT", 12.0, is_bold=True, align="center")
     title_text = transaction_title if transaction_title else "EFT BANKALAR ARASI HESABA HAVALE"
-    insert_text_styled(page, fitz.Point(297.5, 69.0), title_text.upper(), 12.0, is_bold=True, align="center", max_width=330.0)
+    insert_text_styled(page, fitz.Point(297.5, 69.0), turkish_upper(title_text), 12.0, is_bold=True, align="center", max_width=330.0)
 
     # 2. GÖNDERİCİ & ALICI BİLGİLERİ
     page.draw_rect(fitz.Rect(30.0, 80.0, 565.0, 225.0), color=black, width=1.0)
@@ -264,11 +287,11 @@ def generate_akbank_pdf_bytes(
     insert_text_styled(page, fitz.Point(121.2, 149.0), f": {sender_vkn_tckn}", 10.0, is_bold=False, max_width=col_w_sender)
 
     insert_text_styled(page, fitz.Point(32.0, 163.0), "Adı Soyadı/Unvan", 10.0, is_bold=True)
-    insert_text_styled(page, fitz.Point(121.2, 163.0), f": {sender_name.upper()}", 10.0, is_bold=False, max_width=col_w_sender)
+    insert_text_styled(page, fitz.Point(121.2, 163.0), f": {turkish_upper(sender_name)}", 10.0, is_bold=False, max_width=col_w_sender)
 
     # Gönderici Adres Satırları
     insert_text_styled(page, fitz.Point(32.0, 177.0), "Adres", 10.0, is_bold=True)
-    addr_lines = wrap_text(sender_address.upper(), max_width=col_w_sender - 10.0, fontsize=10.0)
+    addr_lines = wrap_text(turkish_upper(sender_address), max_width=col_w_sender - 10.0, fontsize=10.0)
     if addr_lines:
         insert_text_styled(page, fitz.Point(121.2, 177.0), f": {addr_lines[0]}", 10.0, is_bold=False)
         curr_addr_y = 187.0
@@ -290,7 +313,7 @@ def generate_akbank_pdf_bytes(
     insert_text_styled(page, fitz.Point(388.7, 163.0), f": {receiver_name}", 10.0, is_bold=False, max_width=col_w_receiver)
 
     insert_text_styled(page, fitz.Point(299.5, 177.0), "Adres", 10.0, is_bold=True)
-    rec_addr_lines = wrap_text(receiver_address.upper() if receiver_address else "", max_width=col_w_receiver - 10.0, fontsize=10.0)
+    rec_addr_lines = wrap_text(turkish_upper(receiver_address) if receiver_address else "", max_width=col_w_receiver - 10.0, fontsize=10.0)
     if receiver_address and rec_addr_lines:
         insert_text_styled(page, fitz.Point(388.7, 177.0), f": {rec_addr_lines[0]}", 10.0, is_bold=False)
         curr_rec_y = 187.0
@@ -363,7 +386,7 @@ def generate_akbank_pdf_bytes(
     insert_text_styled(page, fitz.Point(165.8, 646.0), f": {operator}", 10.0, is_bold=False, max_width=max_w_dt)
 
     insert_text_styled(page, fitz.Point(32.0, 660.0), "İşlemi Yapan Ad-Soyad", 10.0, is_bold=True)
-    insert_text_styled(page, fitz.Point(165.8, 660.0), f": {operator_name.upper()}", 10.0, is_bold=False, max_width=max_w_dt)
+    insert_text_styled(page, fitz.Point(165.8, 660.0), f": {turkish_upper(operator_name)}", 10.0, is_bold=False, max_width=max_w_dt)
 
     insert_text_styled(page, fitz.Point(32.0, 674.0), "İşlemi Yapan TCKN", 10.0, is_bold=True)
     insert_text_styled(page, fitz.Point(165.8, 674.0), f": {operator_tckn}", 10.0, is_bold=False, max_width=max_w_dt)

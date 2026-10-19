@@ -12,7 +12,14 @@ IMG_SEE_BACK = os.path.join(ASSETS_DIR, "footer_see_back.png")
 IMG_SIZIN_ICIN = os.path.join(ASSETS_DIR, "footer_sizin_icin.png")
 
 def resolve_font(filename, fallback_filename="arial_narrow.ttf"):
-    # 1. Windows font dir
+    # 1. Project assets first
+    local_asset = os.path.join(os.path.dirname(__file__), "assets", filename)
+    if os.path.exists(local_asset):
+        return local_asset
+    local_fallback = os.path.join(os.path.dirname(__file__), "assets", fallback_filename)
+    if os.path.exists(local_fallback):
+        return local_fallback
+    # 2. Windows font dir
     win_dir = os.environ.get("WINDIR", "C:\\Windows")
     p = os.path.join(win_dir, "Fonts", filename)
     if os.path.exists(p):
