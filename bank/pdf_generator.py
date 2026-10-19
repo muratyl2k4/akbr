@@ -341,23 +341,23 @@ def generate_akbank_pdf_bytes(
     bsmv_str = format_tr_currency(bsmv_val)
 
     items = [
-        ("MEVDUAT", f"{amt_str}  TL", "0,00  TL"),
-        ("ŞCH", "0,00  TL", f"{sch_str}  TL"),
-        ("GECEFT KOMİSYON", "0,00  TL", f"{comm_str}  TL"),
-        ("GEC EFT BSMV", "0,00  TL", f"{bsmv_str}  TL"),
+        ("MEVDUAT", f"{amt_str} TL", "0,00 TL"),
+        ("ŞCH", "0,00 TL", f"{sch_str} TL"),
+        ("GECEFT KOMİSYON", "0,00 TL", f"{comm_str} TL"),
+        ("GEC EFT BSMV", "0,00 TL", f"{bsmv_str} TL"),
     ]
 
     row_y = 368.0
     for title, col1, col2 in items:
         insert_text_styled(page, fitz.Point(32.0, row_y), title, 10.0, is_bold=False)
         insert_text_styled(page, fitz.Point(385.0, row_y), col1, 10.0, is_bold=False, align="right")
-        insert_text_styled(page, fitz.Point(563.0, row_y), col2, 10.0, is_bold=False, align="right")
+        insert_text_styled(page, fitz.Point(550.0, row_y), col2, 10.0, is_bold=False, align="right")
         row_y += 14.0
 
     grand_total = float(amount) + float(sch_val or 0.0) + float(comm_val or 0.0) + float(bsmv_val or 0.0)
     total_val_str = format_tr_currency(grand_total)
     insert_text_styled(page, fitz.Point(32.0, 508.0), "TOPLAM", 10.0, is_bold=False)
-    insert_text_styled(page, fitz.Point(563.0, 508.0), f"{total_val_str} TL", 10.0, is_bold=False, align="right")
+    insert_text_styled(page, fitz.Point(550.0, 508.0), f"{total_val_str} TL", 10.0, is_bold=False, align="right")
 
     words_turkish = convert_to_turkish_words(grand_total)
     insert_text_styled(page, fitz.Point(32.0, 522.0), words_turkish, 10.0, is_bold=False, max_width=525.0)
