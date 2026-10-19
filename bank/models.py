@@ -20,13 +20,24 @@ class Customer(models.Model):
     overdraft_interest_rate = models.DecimalField(max_digits=6, decimal_places=2, default=4.25, verbose_name="Artı Para Akdi Faiz Oranı (Aylık)")
     overdraft_late_interest_rate = models.DecimalField(max_digits=6, decimal_places=2, default=4.55, verbose_name="Gecikme Faizi Oranı")
     next_statement_date = models.DateField(null=True, blank=True, verbose_name="Bir Sonraki Ekstre Tarihi")
-    password = models.CharField(max_length=128, blank=True, verbose_name="Şifre (Hashed)")
+    password = models.CharField(
+        max_length=128,
+        blank=True,
+        verbose_name="Giriş Şifresi",
+        help_text="Kullanıcının giriş şifresini buraya normal (düz) olarak yazabilirsiniz (Örn: 123456 veya injection.123). Otomatik hashlenir."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Müşteri"
         verbose_name_plural = "Müşteriler"
         ordering = ['-id']
+
+    def save(self, *args, **kwargs):
+        # Eğer şifre düz metin girildiyse (hash formatında değilse) otomatik hash'le
+        if self.password and not (self.password.startswith('pbkdf2_') or self.password.startswith('argon2') or self.password.startswith('bcrypt')):
+            self.set_password(self.password)
+        super().save(*args, **kwargs)
 
     def set_password(self, raw_password):
         from django.contrib.auth.hashers import make_password
@@ -36,7 +47,13 @@ class Customer(models.Model):
         from django.contrib.auth.hashers import check_password
         if not self.password:
             return False
-        return check_password(raw_password, self.password)
+        # Düz metin olarak kaydedilmişse doğrudan eşleştir
+        if self.password == raw_password:
+            return True
+        try:
+            return check_password(raw_password, self.password)
+        except Exception:
+            return self.password == raw_password
 
     def __str__(self):
         return f"{self.full_name} ({self.customer_no})"
