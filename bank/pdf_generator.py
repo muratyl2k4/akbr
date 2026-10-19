@@ -56,7 +56,7 @@ def mask_text(text: str) -> str:
     return " ".join(masked)
 
 def convert_to_turkish_words(amount: float) -> str:
-    """Sayıyı Türkçe okunuşlu para tutarına çevirir (Örn: 9.37 -> DOKUZ TL OTUZYEDİ KR)"""
+    """Para tutarını Türkçe metin olarak yazar (Örn: 9.77 -> 'YALNIZ DOKUZ TL YETMİŞYEDİ KR')"""
     whole = int(amount)
     decimal = int(round((amount - whole) * 100))
 
@@ -71,13 +71,13 @@ def convert_to_turkish_words(amount: float) -> str:
         res = ""
         if h > 0:
             if h == 1:
-                res += "YÜZ "
+                res += "YÜZ"
             else:
-                res += f"{units[h]} YÜZ "
+                res += f"{units[h]}YÜZ"
         if t > 0:
-            res += f"{tens[t]} "
+            res += tens[t]
         if u > 0:
-            res += f"{units[u]} "
+            res += units[u]
         return res
 
     def convert_whole(number: int) -> str:
@@ -91,25 +91,19 @@ def convert_to_turkish_words(amount: float) -> str:
             if part > 0:
                 part_str = convert_three_digits(part)
                 if group_count == 1 and part == 1:
-                    res = "BİN " + res
+                    res = "BİN" + res
                 else:
-                    res = part_str + thousands[group_count] + " " + res
+                    res = part_str + thousands[group_count] + res
             temp //= 1000
             group_count += 1
-        return res.strip()
+        return res
 
     whole_str = convert_whole(whole)
     dec_str = ""
     if decimal > 0:
         t = decimal // 10
         u = decimal % 10
-        dec_parts = []
-        if tens[t]:
-            dec_parts.append(tens[t])
-        if units[u]:
-            dec_parts.append(units[u])
-        if dec_parts:
-            dec_str = f"{' '.join(dec_parts)} KR"
+        dec_str = f"{tens[t]}{units[u]} KR"
 
     if dec_str:
         return f"YALNIZ {whole_str} TL {dec_str}"
@@ -413,7 +407,7 @@ def generate_transaction_receipt_pdf(tx, mask_identity: bool = False) -> bytes:
     valor_formatted = tx.valor_date.strftime("%d.%m.%Y") if tx.valor_date else date_formatted
 
     return generate_akbank_pdf_bytes(
-        transaction_title=tx.transaction_type or "EFT BANKALAR ARASI HESABA HAVALE",
+        transaction_title="EFT BANKALAR ARASI HESABA HAVALE",
         branch_name=customer.branch_name,
         sender_account_no=customer.account_no,
         sender_customer_no=customer.customer_no,
