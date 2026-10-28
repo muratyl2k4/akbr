@@ -53,8 +53,9 @@ def recalculate_balances(customer: Customer) -> Decimal:
             tx.description = main_title
 
             ref = tx.reference_no.strip() if tx.reference_no else ""
-            if not ref:
-                ref = "000654698"
+            if not ref or ref in ["000654698", "0943605"]:
+                import random
+                ref = f"{random.randint(100000000, 999999999)}"
             elif len(ref) < 9 and ref.isdigit():
                 ref = f"{int(ref):09d}"
             tx.reference_no = ref

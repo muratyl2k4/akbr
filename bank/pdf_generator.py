@@ -221,13 +221,13 @@ def generate_akbank_pdf_bytes(
     receiver_name: str = "Buse Kaya",
     receiver_address: str = "",
     amount: float = 3500.00,
-    sch_amount: float = 1.00,
-    commission: float = 7.97,
-    bsmv: float = 0.40,
+    sch_amount: float = 0.00,
+    commission: float = 15.96,
+    bsmv: float = 0.80,
     date_str: str = "15.09.2026",
     time_str: str = "14:25:00",
     valor_str: str = "15.09.2026",
-    reference_no: str = "0943605",
+    reference_no: str = "",
     operator: str = "KENDISI",
     operator_name: str = "SERKAN YILDIRIM",
     operator_tckn: str = "39182746192",
@@ -236,6 +236,10 @@ def generate_akbank_pdf_bytes(
     mask_identity: bool = False,
 ) -> bytes:
     """Orijinal Akbank dekontunu oluşturup PDF baytları olarak döndürür"""
+    if not reference_no or reference_no in ["0943605", "000654698"]:
+        import random
+        reference_no = f"{random.randint(100000000, 999999999)}"
+
     if mask_identity:
         sender_vkn_tckn = "***********"
         sender_name = mask_text(sender_name)
@@ -327,22 +331,19 @@ def generate_akbank_pdf_bytes(
     page.draw_rect(fitz.Rect(30.0, 225.0, 565.0, 341.0), color=black, width=1.0)
     insert_text_styled(page, fitz.Point(32.0, 237.0), sender_iban.replace(" ", ""), 10.0, is_bold=False)
 
-    # 4. TUTAR BİLGİLERİ (4 Sabit Kalem)
+    # 4. TUTAR BİLGİLERİ (3 Sabit Kalem: Mevduat, Komisyon, BSMV)
     page.draw_rect(fitz.Rect(30.0, 341.0, 565.0, 524.0), color=black, width=1.0)
     insert_text_styled(page, fitz.Point(32.0, 354.0), "TUTAR BİLGİLERİ", 11.0, is_bold=True)
 
     amt_str = format_tr_currency(amount)
-    sch_val = sch_amount if (sch_amount is not None and sch_amount > 0) else 1.00
-    comm_val = commission if (commission is not None and commission > 0) else 7.97
-    bsmv_val = bsmv if (bsmv is not None and bsmv > 0) else 0.40
+    comm_val = commission if (commission is not None and commission > 0) else 15.96
+    bsmv_val = bsmv if (bsmv is not None and bsmv > 0) else 0.80
 
-    sch_str = format_tr_currency(sch_val)
     comm_str = format_tr_currency(comm_val)
     bsmv_str = format_tr_currency(bsmv_val)
 
     items = [
         ("MEVDUAT", f"{amt_str} TL", "0,00 TL"),
-        ("ŞCH", "0,00 TL", f"{sch_str} TL"),
         ("GECEFT KOMİSYON", "0,00 TL", f"{comm_str} TL"),
         ("GEC EFT BSMV", "0,00 TL", f"{bsmv_str} TL"),
     ]
@@ -354,7 +355,7 @@ def generate_akbank_pdf_bytes(
         insert_text_styled(page, fitz.Point(550.0, row_y), col2, 10.0, is_bold=False, align="right")
         row_y += 14.0
 
-    grand_total = float(amount) + float(sch_val or 0.0) + float(comm_val or 0.0) + float(bsmv_val or 0.0)
+    grand_total = float(amount) + float(comm_val or 0.0) + float(bsmv_val or 0.0)
     total_val_str = format_tr_currency(grand_total)
     insert_text_styled(page, fitz.Point(32.0, 508.0), "TOPLAM", 10.0, is_bold=False)
     insert_text_styled(page, fitz.Point(550.0, 508.0), f"{total_val_str} TL", 10.0, is_bold=False, align="right")
@@ -444,9 +445,9 @@ def generate_transaction_receipt_pdf(tx, mask_identity: bool = False) -> bytes:
         receiver_name=tx.receiver_name,
         receiver_address=tx.receiver_address,
         amount=float(tx.amount),
-        sch_amount=float(tx.sch_amount) if tx.sch_amount else 1.00,
-        commission=float(tx.commission) if tx.commission else 7.97,
-        bsmv=float(tx.bsmv) if tx.bsmv else 0.40,
+        sch_amount=0.00,
+        commission=float(tx.commission) if (tx.commission and float(tx.commission) > 0) else 15.96,
+        bsmv=float(tx.bsmv) if (tx.bsmv and float(tx.bsmv) > 0) else 0.80,
         date_str=date_formatted,
         time_str=time_formatted,
         valor_str=valor_formatted,

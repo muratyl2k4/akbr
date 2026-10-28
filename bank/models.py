@@ -79,9 +79,9 @@ class Transaction(models.Model):
     used_overdraft = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Kullanılan Artı Para")
 
     # Akbank Dekont Tutar Tablosu Kalemleri
-    sch_amount = models.DecimalField(max_digits=10, decimal_places=2, default=1.00, verbose_name="ŞCH Tutarı")
-    commission = models.DecimalField(max_digits=10, decimal_places=2, default=7.97, verbose_name="GECEFT Komisyon")
-    bsmv = models.DecimalField(max_digits=10, decimal_places=2, default=0.40, verbose_name="GEC EFT BSMV")
+    sch_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="ŞCH Tutarı")
+    commission = models.DecimalField(max_digits=10, decimal_places=2, default=15.96, verbose_name="GECEFT Komisyon")
+    bsmv = models.DecimalField(max_digits=10, decimal_places=2, default=0.80, verbose_name="GEC EFT BSMV")
 
     # Tarih ve Saat
     transaction_date = models.DateField(default=timezone.now, verbose_name="İşlem Tarihi")
@@ -121,6 +121,9 @@ class Transaction(models.Model):
     def save(self, *args, **kwargs):
         if not self.receipt_serial_no:
             self.receipt_serial_no = f"AKB-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}"
+        if not self.reference_no or self.reference_no in ["000654698", "0943605"]:
+            import random
+            self.reference_no = f"{random.randint(100000000, 999999999)}"
         if not self.valor_date:
             self.valor_date = self.transaction_date
         if not self.operator_name and self.customer:
